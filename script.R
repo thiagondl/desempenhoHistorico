@@ -2,6 +2,7 @@
 library(pdftools)
 library(tidyverse)
 library(here)
+library(numbers)
 
 alteraCaminho <- function(file) {
     paste("data", file, sep="/")
@@ -35,3 +36,34 @@ for(i in 1:length(dataPdf)) {
             stringr::str_extract(".*(?=\")")
     }
 }
+
+index <- length(dataPdf)
+cleanLines <- vector(mode="list", index)
+
+for(i in 1:length(dataPdf)) {
+    for(j in 1:length(dataPdf[[i]])) {
+        column <- dataPdf[[i]][j] %>% str_split(" ")
+        matricula <- as.numeric(column[[1]][2])
+        if(!is.na(matricula)) {
+            cleanLines[[i]][j] <- dataPdf[[i]][j]
+        }
+    }
+}
+
+index <- length(dataPdf)
+cleanLines <- vector(mode="list", index)
+
+for(i in 1:length(dataPdf)) {
+    for(j in 1:length(dataPdf[[i]])) {
+        column <- dataPdf[[i]][j] %>% str_split(" ")
+        matricula <- as.numeric(column[[1]][2])
+        if(!is.na(matricula)) {
+            cleanLines[[i]][j] <- dataPdf[[i]][j]
+        }
+    }
+}
+
+cleanData <- vector(mode="list", index)
+
+cleanData[[1]] <- cleanLines[[1]][!is.na(cleanLines[[1]])]
+cleanData[[2]] <- cleanLines[[2]][!is.na(cleanLines[[2]])]
