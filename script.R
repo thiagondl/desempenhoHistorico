@@ -38,32 +38,32 @@ for(i in 1:length(dataPdf)) {
 }
 
 index <- length(dataPdf)
-cleanLines <- vector(mode="list", index)
+cleanLines <- list()
 
 for(i in 1:length(dataPdf)) {
     for(j in 1:length(dataPdf[[i]])) {
         column <- dataPdf[[i]][j] %>% str_split(" ")
         matricula <- as.numeric(column[[1]][2])
         if(!is.na(matricula)) {
-            cleanLines[[i]][j] <- dataPdf[[i]][j]
+            cleanLines <- c(cleanLines, dataPdf[[i]][j])
         }
     }
 }
 
-index <- length(dataPdf)
-cleanLines <- vector(mode="list", index)
+cleanLines <- unlist(cleanLines)
+column_index <- list()
 
-for(i in 1:length(dataPdf)) {
-    for(j in 1:length(dataPdf[[i]])) {
-        column <- dataPdf[[i]][j] %>% str_split(" ")
-        matricula <- as.numeric(column[[1]][2])
-        if(!is.na(matricula)) {
-            cleanLines[[i]][j] <- dataPdf[[i]][j]
-        }
-    }
+for(e in cleanLines) {
+    matches <- regexpr("[0-9][0-9][0-9][0-9][0-9][0-9][0-9]", e)
+    length <- attr(matches,"match.length")
+    column1 <- substr(e, matches[1], length + 1)
+    e <- substring(e, matches[1] + length + 1)
+    
+    matches <- gregexpr("^.*(?=( Optativa | Obrigatória))", e, perl = TRUE)[[1]]
+    length <- attr(matches,"match.length")
+    column2 <- substr(e, matches[1], length)
+    e <- substring(e, matches[1] + length + 1)
+
 }
 
-cleanData <- vector(mode="list", index)
 
-cleanData[[1]] <- cleanLines[[1]][!is.na(cleanLines[[1]])]
-cleanData[[2]] <- cleanLines[[2]][!is.na(cleanLines[[2]])]
