@@ -1,116 +1,116 @@
-#install.packages("pdftools")
-library(pdftools)
-library(tidyverse)
-library(here)
-library(numbers)
-
-alteraCaminho <- function(file) {
+change_path <- function(file) {
     paste("data", file, sep="/")
 }
 
-files <- list.files(path = here("data"), pattern = ("pdf$")) %>% 
-    map_chr(alteraCaminho)
-
-pdfFile <- pdf_text(files) %>% str_split("\n")
-dataPdf <- c()
-
-for(i in 1:(length(pdfFile)-1)) {
-    if (i == 1) {
-        dataPdf[[i]] <- pdfFile[[i]][14:(length(pdfFile[[i]])-3)]
-    } else if (i == 2) {
-        dataPdf[[i]] <- pdfFile[[i]][3:(length(pdfFile[[i]])-5)]
-    }
+get_file <- function() {
+    files <- list.files(path = here("data"), pattern = ("pdf$")) %>% 
+        map_chr(change_path)
+    file <- pdf_text(files) %>% str_split("\n")
+    return(file)
 }
 
-dataPdf <- str_squish(dataPdf)
-dataPdf <- strsplit(dataPdf, split= "\\,\\s\\\"")
-
- for(i in 1:length(dataPdf)) {
-    dataPdf[[i]][1] <- dataPdf[[i]][1] %>%
-        stringr::str_extract("(?<=c[:punct:]\\\").*")
-}
-
-for(i in 1:length(dataPdf)) {
-    for(j in 1:length(dataPdf[[i]])) {
-        dataPdf[[i]][j] <- dataPdf[[i]][j] %>%
-            stringr::str_extract(".*(?=\")")
-    }
-}
-
-index <- length(dataPdf)
-cleanLines <- list()
-
-for(i in 1:length(dataPdf)) {
-    for(j in 1:length(dataPdf[[i]])) {
-        column <- dataPdf[[i]][j] %>% str_split(" ")
-        matricula <- as.numeric(column[[1]][2])
-        if(!is.na(matricula)) {
-            cleanLines <- c(cleanLines, dataPdf[[i]][j])
+clean_file <- function() {
+    file <- get_file()
+    data <- c()
+    for(i in 1:(length(file)-1)) {
+        if (i == 1) {
+            data[[i]] <- file[[i]][14:(length(file[[i]])-3)]
+        } else if (i == 2) {
+            data[[i]] <- file[[i]][3:(length(file[[i]])-5)]
         }
     }
+    
+    data <- str_squish(data)
+    data <- strsplit(data, split= "\\,\\s\\\"")
+    
+    for(i in 1:length(data)) {
+        data[[i]][1] <- data[[i]][1] %>%
+            stringr::str_extract("(?<=c[:punct:]\\\").*")
+    }
+    
+    for(i in 1:length(data)) {
+        for(j in 1:length(data[[i]])) {
+            data[[i]][j] <- data[[i]][j] %>%
+                stringr::str_extract(".*(?=\")")
+        }
+    }
+    return(data)
 }
 
-cleanLines <- unlist(cleanLines)
-column1 <- c()
-column2 <- c()
-column3 <- c()
-column4 <- c()
-column5 <- c()
-column6 <- c()
-column7 <- c()
-column8 <- c()
-
-for(e in cleanLines) {
-    matches <- regexpr("[0-9][0-9][0-9][0-9][0-9][0-9][0-9]", e)
-    length <- attr(matches,"match.length")
-    column1 <- c(column1, substr(e, matches[1], length + 1))
-    e <- substring(e, matches[1] + length + 1)
+remove_unnecessary_value <- function(data) {
+    clean_lines <- list()
     
-    matches <- gregexpr("^.*(?=( Optativa | Obrigatória))", e, perl = TRUE)[[1]]
-    length <- attr(matches,"match.length")
-    column2 <- c(column2, substr(e, matches[1], length))
-    e <- substring(e, matches[1] + length + 1)
+    for(i in 1:length(data)) {
+        for(j in 1:length(data[[i]])) {
+            column <- data[[i]][j] %>% str_split(" ")
+            matricula <- as.numeric(column[[1]][2])
+            if(!is.na(matricula)) {
+                clean_lines <- c(clean_lines, data[[i]][j])
+            }
+        }
+    }
     
-    matches <- gregexpr("Optativa|Obrigatória", e)[[1]]
-    length <- attr(matches,"match.length")
-    column3 <- c(column3, substr(e, matches[1], length))
-    e <- substring(e, matches[1] + length + 1)
-    
-    matches <- gregexpr("^.*(?=( [0-9][0-9] ))", e, perl = TRUE)[[1]]
-    length <- attr(matches,"match.length")
-    column4 <- c(column4, substr(e, matches[1], length))
-    e <- substring(e, matches[1] + length + 1)
-    
-    matches <- gregexpr("^.*(?=( - | [0-9]*,[0-9]))", e, perl = TRUE)[[1]]
-    length <- attr(matches,"match.length")
-    column5 <- c(column5, substr(e, matches[1], length))
-    e <- substring(e, matches[1] + length + 1)
-    
-    matches <- gregexpr("-|[0-9]*,[0-9]", e, perl = TRUE)[[1]]
-    length <- attr(matches,"match.length")
-    column6 <- c(column6, substr(e, matches[1], length))
-    e <- substring(e, matches[1] + length + 1)
-    
-    matches <- gregexpr("^.*(?=( [0-9]*.[0-9]))", e, perl = TRUE)[[1]]
-    length <- attr(matches,"match.length")
-    column7 <- c(column7, substr(e, matches[1], length))
-    e <- substring(e, matches[1] + length + 1)
-
-    column8 <- c(column8, e)
+    clean_lines <- unlist(clean_lines)
+    return(clean_lines)
 }
 
-data <-
-    as_tibble(
-        list(
-            "codigo_disc" = column1,
-            "nome_disc" = column2,
-            "tipo_cod" = column3,
-            "credito" = column4,
-            "ch" = column5,
-            "media" = column6,
-            "situacao" = column7,
-            "periodo" = column8
+split_columns <- function(clean_lines) {
+    column1 <- c()
+    column2 <- c()
+    column3 <- c()
+    column4 <- c()
+    column5 <- c()
+    column6 <- c()
+    column7 <- c()
+    column8 <- c()
+    
+    for(e in clean_lines) {
+        matches <- regexpr("[0-9][0-9][0-9][0-9][0-9][0-9][0-9]", e)
+        length <- attr(matches,"match.length")
+        column1 <- c(column1, substr(e, matches[1], length + 1))
+        e <- substring(e, matches[1] + length + 1)
+        
+        matches <- gregexpr("^.*(?=( Optativa | Obrigatória | Extracurricular ))", e, perl = TRUE)[[1]]
+        length <- attr(matches,"match.length")
+        column2 <- c(column2, substr(e, matches[1], length))
+        e <- substring(e, matches[1] + length + 1)
+        
+        line_split <- e %>% str_split(" ")
+        column_split <- line_split[[1]]
+        
+        column3 <- c(column3, column_split[1])
+        column4 <- c(column4, column_split[2])
+        column5 <- c(column5, column_split[3])
+        column6 <- c(column6, column_split[4])
+        column7 <- c(column7, column_split[5])
+        column8 <- c(column8, column_split[6])
+    }
+    list_column <- list(column1, column2, column3, column4, column5, column6, column7, column8)
+    return(list_column)
+}
+
+format_data <- function() {
+    data <- clean_file()
+    clean_lines <- remove_unnecessary_value(data)
+    columns <- split_columns(clean_lines)
+    
+    formatted_data <-
+        as_tibble(
+            list(
+                "codigo_disc" = columns[[1]],
+                "nome_disc" = columns[[2]],
+                "tipo_disc" = columns[[3]],
+                "credito" = columns[[4]],
+                "ch" = columns[[5]],
+                "media" = str_replace_all(columns[[6]], ",", "."),
+                "situacao" = columns[[7]],
+                "periodo" = columns[[8]]
+            )
         )
-    )
+    return(formatted_data)
+}
 
-write_csv(data, "data/data.csv")
+get_data <- function() {
+    formatted_data <- format_data()
+    return(formatted_data)
+}
