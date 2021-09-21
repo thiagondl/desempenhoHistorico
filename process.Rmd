@@ -34,6 +34,42 @@ historico %>%
 ```
 
 ```{r}
+calcula_cra <- function(data, periodoLimite) {
+  periodos <- data %>%
+    filter(periodo <= periodoLimite, tipo_disc %in% c("Optativa", "Obrigatória"))
+
+  return(weighted.mean(periodos$media, periodos$credito))
+}
+
+historico %>%
+    select(periodo) %>%
+    distinct() %>%
+    rowwise() %>%
+    mutate(media_periodo = calcula_cra(historico, periodo)) %>%
+    filter(!is.na(media_periodo)) %>%
+    ggplot(aes(periodo, media_periodo, group = 1)) + 
+    geom_line(colour = '#377eb8') +
+    geom_point(colour = '#377eb8') +
+    labs(title = "Variação do CRA por período",
+         y = "Média",
+         x = "Período")
+```
+
+```{r}
+historico %>%
+    group_by(periodo, tipo_disc) %>%
+    summarise(media_periodo = mean(media), .groups = 'drop') %>%
+    filter(!is.na(media_periodo)) %>%
+    ggplot(aes(periodo, media_periodo, group = tipo_disc, color = tipo_disc)) + 
+    geom_line() +
+    geom_point() +
+    labs(title = "Variação da média por período",
+         color = "Tipo da disciplina",
+         y = "Média",
+         x = "Período")
+```
+
+```{r}
 historico %>%
     filter(!is.na(media)) %>%
     ggplot(aes(media)) + 

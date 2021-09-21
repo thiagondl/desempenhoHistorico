@@ -99,11 +99,11 @@ format_data <- function() {
             list(
                 "codigo_disc" = columns[[1]],
                 "nome_disc" = columns[[2]],
-                "tipo_disc" = columns[[3]],
-                "credito" = columns[[4]],
-                "ch" = columns[[5]],
-                "media" = str_replace_all(columns[[6]], ",", "."),
-                "situacao" = columns[[7]],
+                "tipo_disc" = as.factor(columns[[3]]),
+                "credito" = as.double(columns[[4]]),
+                "ch" = as.double(columns[[5]]),
+                "media" = as.double(str_replace_all(columns[[6]], ",", ".")),
+                "situacao" = as.factor(columns[[7]]),
                 "periodo" = columns[[8]]
             )
         )
