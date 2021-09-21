@@ -1,7 +1,8 @@
 ---
 title: "Avaliação de desempenho"
 subtitle: "Baseado nos valores do histórico"
-output: html_notebook
+author: "Thiago Lima"
+output: html_document
 ---
 
 ```{r}
@@ -15,7 +16,7 @@ if (any(installed_packages == FALSE)) {
 }
 
 invisible(lapply(packages, library, character.only = TRUE))
-source("script.R")
+source("formatData.R")
 theme_set(theme_bw())
 ```
 

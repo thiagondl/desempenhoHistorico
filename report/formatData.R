@@ -1,5 +1,5 @@
 change_path <- function(file) {
-    paste("data", file, sep="/")
+    file.path(here("data"), file)
 }
 
 get_file <- function() {
