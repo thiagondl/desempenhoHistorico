@@ -1,9 +1,12 @@
 ---
-title: "R Notebook"
+title: "Avaliação de desempenho"
+subtitle: "Baseado nos valores do histórico"
 output: html_notebook
 ---
 
 ```{r}
+knitr::opts_chunk$set(echo = FALSE)
+
 packages <- c("pdftools", "tidyverse", "here", "numbers")
 
 installed_packages <- packages %in% rownames(installed.packages())
@@ -26,8 +29,8 @@ historico %>%
     summarise(media_periodo = mean(media), .groups = 'drop') %>%
     filter(!is.na(media_periodo)) %>%
     ggplot(aes(periodo, media_periodo, group = 1)) + 
-    geom_line(colour = '#377eb8') +
-    geom_point(colour = '#377eb8') +
+    geom_line(colour = '#f1a340') +
+    geom_point(colour = '#f1a340') +
     labs(title = "Variação da média por período",
          y = "Média",
          x = "Período")
@@ -48,8 +51,8 @@ historico %>%
     mutate(media_periodo = calcula_cra(historico, periodo)) %>%
     filter(!is.na(media_periodo)) %>%
     ggplot(aes(periodo, media_periodo, group = 1)) + 
-    geom_line(colour = '#377eb8') +
-    geom_point(colour = '#377eb8') +
+    geom_line(colour = '#f1a340') +
+    geom_point(colour = '#f1a340') +
     labs(title = "Variação do CRA por período",
          y = "Média",
          x = "Período")
@@ -73,7 +76,7 @@ historico %>%
 historico %>%
     filter(!is.na(media)) %>%
     ggplot(aes(media)) + 
-    geom_histogram(binwidth = 0.5, fill = '#A75EB2') +
+    geom_histogram(binwidth = 0.5, fill = '#998ec3') +
     scale_x_continuous(breaks = seq(0, 10, 0.5)) +
     scale_y_continuous(breaks = seq(0, nrow(historico), 5)) +
     labs(title = "Distribuição da quantidade das notas",
